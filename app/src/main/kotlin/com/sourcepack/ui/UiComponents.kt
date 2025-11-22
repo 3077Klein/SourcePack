@@ -1,5 +1,6 @@
 package com.sourcepack.ui
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -10,10 +11,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
-import com.sourcepack.core.Str 
+import com.sourcepack.core.Str
 
-// 图标资源定义，避免导入庞大的 Material Icons 库
 object Ico {
     private fun icon(name: String, block: ImageVector.Builder.() -> Unit): ImageVector {
         return ImageVector.Builder(name, 24.dp, 24.dp, 24f, 24f).apply(block).build()
@@ -21,7 +22,6 @@ object Ico {
     private fun ImageVector.Builder.mPath(block: androidx.compose.ui.graphics.vector.PathBuilder.() -> Unit) {
         path(fill = SolidColor(Color.Black)) { block() }
     }
-
     val Settings = icon("Set") { mPath { moveTo(19.14f,12.94f);curveToRelative(0.04f,-0.3f,0.06f,-0.61f,0.06f,-0.94f);curveToRelative(0.0f,-0.32f,-0.02f,-0.64f,-0.06f,-0.94f);lineToRelative(2.03f,-1.58f);curveToRelative(0.18f,-0.14f,0.23f,-0.41f,0.12f,-0.61f);lineToRelative(-1.92f,-3.32f);curveToRelative(-0.12f,-0.22f,-0.37f,-0.29f,-0.59f,-0.22f);lineToRelative(-2.39f,0.96f);curveToRelative(-0.5f,-0.38f,-1.03f,-0.7f,-1.62f,-0.94f);lineToRelative(-0.36f,-2.54f);curveToRelative(-0.04f,-0.24f,-0.24f,-0.41f,-0.48f,-0.41f);horizontalLineToRelative(-3.84f);curveToRelative(-0.24f,0.0f,-0.43f,0.17f,-0.47f,0.41f);lineToRelative(-0.36f,2.54f);curveToRelative(-0.59f,0.24f,-1.13f,0.57f,-1.62f,0.94f);lineToRelative(-2.39f,-0.96f);curveToRelative(-0.22f,-0.08f,-0.47f,0.0f,-0.59f,0.22f);lineToRelative(-1.92f,3.32f);curveToRelative(-0.12f,0.21f,-0.07f,0.47f,0.12f,0.61f);lineToRelative(2.03f,1.58f);curveToRelative(-0.04f,0.3f,-0.06f,0.62f,-0.06f,0.94f);reflectiveCurveToRelative(0.02f,0.64f,0.06f,0.94f);lineToRelative(-2.03f,1.58f);curveToRelative(-0.18f,0.14f,-0.23f,0.41f,-0.12f,0.61f);lineToRelative(1.92f,3.32f);curveToRelative(0.12f,0.22f,0.37f,0.29f,0.59f,0.22f);lineToRelative(2.39f,-0.96f);curveToRelative(0.5f,0.38f,1.03f,0.7f,1.62f,0.94f);lineToRelative(0.36f,2.54f);curveToRelative(0.05f,0.24f,0.24f,0.41f,0.48f,0.41f);horizontalLineToRelative(3.84f);curveToRelative(0.24f,0.0f,0.44f,-0.17f,0.47f,-0.41f);lineToRelative(0.36f,-2.54f);curveToRelative(0.59f,-0.24f,1.13f,-0.56f,1.62f,-0.94f);lineToRelative(2.39f,0.96f);curveToRelative(0.22f,0.08f,0.47f,0.0f,0.59f,-0.22f);lineToRelative(1.92f,-3.32f);curveToRelative(0.12f,-0.22f,0.07f,-0.47f,-0.12f,-0.61f);lineToRelative(-2.01f,-1.58f);close();moveTo(12.0f,15.6f);curveToRelative(-1.98f,0.0f,-3.6f,-1.62f,-3.6f,-3.6f);reflectiveCurveToRelative(1.62f,-3.6f,3.6f,-3.6f);reflectiveCurveToRelative(3.6f,1.62f,3.6f,3.6f);reflectiveCurveToRelative(-1.62f,3.6f,-3.6f,3.6f);close() } }
     val Inventory2 = icon("Inv") { mPath { moveTo(20.0f, 2.0f); horizontalLineTo(4.0f); curveTo(2.9f, 2.0f, 2.0f, 2.9f, 2.0f, 4.0f); verticalLineToRelative(3.01f); curveTo(2.0f, 8.11f, 2.9f, 9.0f, 4.0f, 9.0f); horizontalLineToRelative(1.0f); verticalLineToRelative(11.0f); curveToRelative(0.0f, 1.1f, 0.9f, 2.0f, 2.0f, 2.0f); horizontalLineToRelative(10.0f); curveToRelative(1.1f, 0.0f, 2.0f, -0.9f, 2.0f, -2.0f); verticalLineTo(9.0f); horizontalLineToRelative(1.0f); curveToRelative(1.1f, 0.0f, 2.0f, -0.89f, 2.0f, -1.99f); verticalLineTo(4.0f); curveTo(22.0f, 2.9f, 21.1f, 2.0f, 20.0f, 2.0f); close(); moveTo(9.0f, 12.0f); horizontalLineToRelative(6.0f); verticalLineToRelative(2.0f); horizontalLineTo(9.0f); verticalLineTo(12.0f); close(); moveTo(20.0f, 7.0f); horizontalLineTo(4.0f); verticalLineTo(4.0f); horizontalLineToRelative(16.0f); verticalLineTo(7.0f); close() } }
     val Folder = icon("Fld") { mPath { moveTo(10.0f,4.0f);horizontalLineTo(4.0f);curveTo(2.9f,4.0f,2.01f,4.9f,2.01f,6.0f);lineTo(2.0f,18.0f);curveToRelative(0.0f,1.1f,0.9f,2.0f,2.0f,2.0f);horizontalLineToRelative(16.0f);curveToRelative(1.1f,0.0f,2.0f,-0.9f,2.0f,-2.0f);verticalLineTo(8.0f);curveToRelative(0.0f,-1.1f,-0.9f,-2.0f,-2.0f,-2.0f);horizontalLineToRelative(-8.0f);lineTo(10.0f,4.0f);close() } }
@@ -64,7 +64,7 @@ fun HomeBtn(icon: ImageVector, title: String, subtitle: String, onClick: () -> U
 }
 
 @Composable
-fun ResultCard(success: Boolean, msg: String, onShare: (() -> Unit)?, onReset: () -> Unit) {
+fun ResultCard(success: Boolean, msg: String, onShare: (() -> Unit)?, onReset: () -> Unit, errorLogUri: Uri? = null) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = if (success) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.errorContainer
@@ -90,6 +90,19 @@ fun ResultCard(success: Boolean, msg: String, onShare: (() -> Unit)?, onReset: (
                     Spacer(Modifier.width(16.dp))
                     FilledTonalButton(onClick = onShare) { 
                         Text(Str.get("分享", "Share")) 
+                    }
+                }
+                // 新增：如果存在错误日志，显示分享日志按钮
+                if (!success && errorLogUri != null && onShare != null) {
+                    Spacer(Modifier.width(16.dp))
+                    FilledTonalButton(
+                        onClick = { onShare() }, // 这里会调用传入的分享逻辑
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        )
+                    ) {
+                        Text(Str.get("分享日志", "Share Log"))
                     }
                 }
             }

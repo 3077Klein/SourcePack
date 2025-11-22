@@ -12,27 +12,23 @@ import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 
 object SourcePacker {
-    // 系统级忽略目录：这些目录通常包含构建产物或元数据，不参与分析
+    // ... (保持之前的常量不变)
     private val FORCE_IGNORE_DIRS = setOf(".git", ".svn", ".idea", ".vscode", ".gradle", "build", "target", "node_modules", "captures")
     
-    // 二进制文件后缀：这些文件的内容会被跳过，但在文件树中会保留显示
     private val BINARY_EXTS = setOf(
         ".zip", ".7z", ".rar", ".tar", ".gz", ".apk", ".jar", ".png", ".jpg", ".jpeg", ".webp", ".gif", ".ico", ".svg",
         ".so", ".dll", ".exe", ".class", ".dex", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
         ".mp3", ".mp4", ".wav", ".ogg", ".db", ".sqlite", ".ttf", ".woff", ".eot", ".psd", ".ai"
     )
     
-    private const val MAX_FILE_SIZE = 1024 * 1024L // 文本内容读取上限 1MB
-    private const val BUFFER_SIZE = 16 * 1024 // 16KB 写入缓冲
+    private const val MAX_FILE_SIZE = 1024 * 1024L 
+    private const val BUFFER_SIZE = 16 * 1024 
 
     interface ProgressCallback {
         fun onProgress(currentFile: String)
     }
 
-    /**
-     * 统一打包入口
-     * 负责调度文件遍历、过滤、格式化写入
-     */
+    // --- 统一打包入口 ---
     suspend fun packToStream(
         ctx: Context,
         root: FastFile, 
@@ -48,36 +44,37 @@ object SourcePacker {
         try {
             val projectName = root.name
             
-            // 准备目录过滤规则 (仅用于递归时跳过特定文件夹)
+            // 【关键修复】获取正在写入的文件名，防止递归读取自己
+            val destName = DocumentFile.fromSingleUri(ctx, destUri)?.name ?: "unknown_output_file"
+
+            // 准备目录过滤规则
             val skipDirs = FORCE_IGNORE_DIRS.toMutableSet().apply {
                 if (cfg.ignoreGradle) add(".gradle")
                 if (cfg.ignoreBuild) add("build")
                 if (cfg.ignoreGit) add(".git")
             }
-            // 准备内容过滤规则 (后缀名标准化)
             val binExts = userExts.map { if (it.startsWith(".")) it else ".$it" }.toSet()
 
-            // 1. 写入项目头部信息
             writeHeader(writer, projectName, cfg)
 
-            // 2. 生成并写入文件树 (Metadata)
-            // 策略：除了系统级忽略目录外，展示所有文件（包括被黑名单过滤的文件），以便 AI 理解完整架构
+            // 2. 生成树 (传入 destName 进行过滤)
             if (cfg.format != Format.XML) {
                 cb.onProgress("Generating Tree...")
                 writer.write("## Project Structure\n\n")
                 writer.write("```text\n")
                 val treeBuilder = StringBuilder()
-                generateTreeString(root, "", treeBuilder, skipDirs)
+                // 传入 destName
+                generateTreeString(root, "", treeBuilder, skipDirs, destName)
                 writer.write(treeBuilder.toString())
                 writer.write("```\n\n")
             }
 
-            // 3. 递归处理文件内容 (应用黑名单和二进制过滤)
+            // 3. 处理内容 (传入 destName 进行过滤)
             if (cfg.mode == Mode.FULL || cfg.format == Format.XML) {
                 if (cfg.format != Format.XML) {
                     writer.write("## File Contents\n\n")
                 }
-                processNode(ctx, root, "", writer, skipDirs, userFiles, binExts, cfg, cb)
+                processNode(ctx, root, "", writer, skipDirs, userFiles, binExts, cfg, cb, destName)
             }
 
             writeFooter(writer, cfg)
@@ -90,12 +87,7 @@ object SourcePacker {
         }
     }
 
-    /**
-     * GitHub 仓库处理逻辑
-     * 1. 下载 Zip
-     * 2. 在内存中构建虚拟文件系统 (VFS)
-     * 3. 调用统一打包接口
-     */
+    // ... (packGitHubRepo 保持不变) ...
     suspend fun packGitHubRepo(
         urlStr: String,
         destUri: Uri,
@@ -106,7 +98,6 @@ object SourcePacker {
         cb: ProgressCallback
     ) = withContext(Dispatchers.IO) {
         val tempFile = File(ctx.cacheDir, "gh_temp_${System.currentTimeMillis()}.zip")
-        
         try {
             cb.onProgress("Downloading...")
             val url = URL(urlStr)
@@ -114,35 +105,26 @@ object SourcePacker {
             conn.connectTimeout = 15000
             conn.readTimeout = 60000
             conn.instanceFollowRedirects = true
-            
-            conn.inputStream.use { input ->
-                FileOutputStream(tempFile).use { output ->
-                    input.copyTo(output)
-                }
-            }
+            conn.inputStream.use { input -> FileOutputStream(tempFile).use { output -> input.copyTo(output) } }
             
             cb.onProgress("Analyzing Structure...")
             val zipFile = ZipFile(tempFile)
-            // 构建内存映射树，避免解压大量小文件
             val rootNode = buildZipVFS(zipFile, urlStr.substringAfterLast("/").substringBefore("."))
             
             packToStream(ctx, rootNode, destUri, userFiles, userExts, cfg, cb)
-            
             zipFile.close()
         } finally {
             tempFile.delete()
         }
     }
 
-    /**
-     * 生成可视化目录树字符串
-     * 注意：此方法不过滤用户黑名单文件，只过滤 skipDirs，保证架构可见性
-     */
+    // --- 树生成逻辑 (已修复) ---
     private fun generateTreeString(
         node: FastFile,
         prefix: String,
         sb: StringBuilder,
-        skipDirs: Set<String>
+        skipDirs: Set<String>,
+        ignoreFile: String // 新增参数
     ) {
         if (prefix.isEmpty()) {
             sb.append("📦 ${node.name}\n")
@@ -155,7 +137,9 @@ object SourcePacker {
             for (child in children) {
                 val name = child.name
                 
-                // 仅跳过系统级忽略目录
+                // 如果在树里发现了输出文件本身，直接隐藏
+                if (!child.isDirectory && name == ignoreFile) continue
+
                 if (child.isDirectory && name in skipDirs) continue
                 
                 val isDir = child.isDirectory
@@ -164,16 +148,13 @@ object SourcePacker {
                 sb.append(prefix).append(icon).append(name).append("\n")
                 
                 if (isDir) {
-                    generateTreeString(child, "$prefix  ", sb, skipDirs)
+                    generateTreeString(child, "$prefix  ", sb, skipDirs, ignoreFile)
                 }
             }
         }
     }
 
-    /**
-     * 递归写入文件内容
-     * 此处应用严格的过滤逻辑 (User Files, Binary Extensions, File Size)
-     */
+    // --- 内容处理逻辑 (已修复) ---
     private suspend fun processNode(
         ctx: Context,
         node: FastFile,
@@ -183,12 +164,12 @@ object SourcePacker {
         userFiles: Set<String>,
         binExts: Set<String>,
         cfg: PackerConfig,
-        cb: ProgressCallback
+        cb: ProgressCallback,
+        ignoreFile: String // 新增参数
     ) {
         currentCoroutineContext().ensureActive()
 
         if (node.isDirectory) {
-            // XML 格式需要保留目录层级标签
             if (cfg.format == Format.XML && relativePath.isNotEmpty()) {
                 writer.write("  <dir name=\"${node.name}\">\n")
             }
@@ -199,18 +180,20 @@ object SourcePacker {
             for (child in children) {
                 currentCoroutineContext().ensureActive()
                 val name = child.name
+                
+                // 如果在处理内容时发现了输出文件本身，直接跳过
+                if (!child.isDirectory && name == ignoreFile) continue
+
                 val childPath = if (relativePath.isEmpty()) name else "$relativePath/$name"
 
-                // 1. 目录过滤
                 if (child.isDirectory) {
                     if (name in skipDirs) continue
                 } else {
-                    // 2. 文件内容过滤 (黑名单文件跳过写入，但在 Tree 中已展示)
                     if (name in userFiles) continue
                     if (binExts.any { name.endsWith(it, ignoreCase = true) }) continue
                 }
                 
-                processNode(ctx, child, childPath, writer, skipDirs, userFiles, binExts, cfg, cb)
+                processNode(ctx, child, childPath, writer, skipDirs, userFiles, binExts, cfg, cb, ignoreFile)
             }
 
             if (cfg.format == Format.XML && relativePath.isNotEmpty()) {
@@ -218,12 +201,10 @@ object SourcePacker {
             }
 
         } else {
-            // 非 XML 模式下，Tree Mode 不需要写入文件内容
             if (cfg.mode == Mode.TREE && cfg.format != Format.XML) return
             
             cb.onProgress(relativePath)
             
-            // 检查二进制文件和大小限制
             val isBinExt = BINARY_EXTS.any { node.name.endsWith(it, ignoreCase = true) }
             if (isBinExt || node.length > MAX_FILE_SIZE) return
 
@@ -231,8 +212,10 @@ object SourcePacker {
         }
     }
 
-    // --- 文件系统抽象层 (适配 File, DocumentFile, ZipEntry) ---
+    // ... (剩下的 FastFile 接口、实现类和辅助方法完全保持不变，复制原来的即可) ...
+    // 为节省篇幅，FastFile, JavaIoFile, DocumentFileNode, ZipFastFile, buildZipVFS, appendContent 等保持原样
     
+    // 补全 FastFile 接口和实现 (防止复制出错，这里简写，实际请保留原文件这部分)
     interface FastFile {
         val name: String
         val isDirectory: Boolean
@@ -240,7 +223,6 @@ object SourcePacker {
         fun listFiles(): List<FastFile>
         fun openStream(ctx: Context): InputStream
     }
-    
     class JavaIoFile(val file: File) : FastFile {
         override val name: String get() = file.name
         override val isDirectory: Boolean get() = file.isDirectory
@@ -248,7 +230,6 @@ object SourcePacker {
         override fun listFiles(): List<FastFile> = file.listFiles()?.map { JavaIoFile(it) } ?: emptyList()
         override fun openStream(ctx: Context): InputStream = FileInputStream(file)
     }
-
     class DocumentFileNode(val file: DocumentFile) : FastFile {
         override val name: String get() = file.name ?: ""
         override val isDirectory: Boolean get() = file.isDirectory
@@ -256,7 +237,6 @@ object SourcePacker {
         override fun listFiles(): List<FastFile> = file.listFiles().map { DocumentFileNode(it) }
         override fun openStream(ctx: Context): InputStream = ctx.contentResolver.openInputStream(file.uri) ?: throw IOException()
     }
-
     class ZipFastFile(
         override val name: String,
         override val isDirectory: Boolean,
@@ -268,12 +248,10 @@ object SourcePacker {
         override fun listFiles(): List<FastFile> = children
         override fun openStream(ctx: Context): InputStream = if (entry != null) zipFile.getInputStream(entry) else ByteArrayInputStream(ByteArray(0))
     }
-
-    // --- Zip VFS 构建逻辑 ---
+    
     private fun buildZipVFS(zipFile: ZipFile, projectName: String): ZipFastFile {
         val treeMap = mutableMapOf<String, MutableList<ZipEntry>>()
         val entries = zipFile.entries()
-        
         while (entries.hasMoreElements()) {
             val entry = entries.nextElement()
             val path = entry.name.removeSuffix("/")
@@ -281,7 +259,6 @@ object SourcePacker {
             val parentPath = if (path.contains("/")) path.substringBeforeLast("/") else ""
             treeMap.getOrPut(parentPath) { mutableListOf() }.add(entry)
         }
-        
         fun buildNode(name: String, path: String, entry: ZipEntry?): ZipFastFile {
             val isDir = entry?.isDirectory ?: true
             val childrenEntries = treeMap[path] ?: emptyList()
@@ -292,8 +269,6 @@ object SourcePacker {
             }
             return ZipFastFile(name, isDir, zipFile, entry, childrenNodes)
         }
-        
-        // 处理 GitHub Zip 包通常包含一层根目录的情况
         val rootChildren = treeMap[""] ?: emptyList()
         if (rootChildren.size == 1 && rootChildren[0].isDirectory) {
             val realRoot = rootChildren[0]
@@ -301,8 +276,6 @@ object SourcePacker {
         }
         return buildNode(projectName, "", null)
     }
-
-    // --- 写入辅助方法 ---
 
     suspend fun packToStream(ctx: Context, rootUri: Uri, destUri: Uri, uFiles: Set<String>, uExts: Set<String>, cfg: PackerConfig, cb: ProgressCallback) {
         val rootNode: FastFile = if (rootUri.scheme == "file") {
@@ -317,19 +290,15 @@ object SourcePacker {
         try {
             writer.write(formatHeader(path, cfg.format))
             node.openStream(ctx).use { ins ->
-                // 预读检测二进制
                 val headBuffer = ByteArray(1024)
                 val headReadLen = readAtMost(ins, headBuffer)
                 val isBinary = if (headReadLen > 0) isBufferBinary(headBuffer, headReadLen) else false
-                
                 if (isBinary) {
                     writer.write("[Binary content detected]")
                 } else {
                     val headStream = ByteArrayInputStream(headBuffer, 0, headReadLen)
                     val combinedStream = SequenceInputStream(headStream, ins)
                     val reader = BufferedReader(InputStreamReader(combinedStream), 8192)
-                    
-                    // 逐行读取并处理压缩选项
                     var line = reader.readLine()
                     while (line != null) {
                          if (cfg.compress) {
@@ -396,7 +365,6 @@ object SourcePacker {
     
     private fun escapeXml(s: String) = s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
-    // 处理多文件选择模式
     suspend fun packListToStream(ctx: Context, uris: List<Uri>, destUri: Uri, cfg: PackerConfig, cb: ProgressCallback) = withContext(Dispatchers.IO) {
         val outputStream = ctx.contentResolver.openOutputStream(destUri, "w") ?: return@withContext
         val writer = BufferedWriter(OutputStreamWriter(outputStream), BUFFER_SIZE)

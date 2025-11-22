@@ -34,7 +34,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        // 保持屏幕常亮，防止在长时间打包过程中休眠
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         
         setContent {
@@ -44,7 +43,6 @@ class MainActivity : ComponentActivity() {
         }
     }
     
-    // 调用系统分享发送生成的文件
     fun share(uri: Uri) {
         try {
             val intent = Intent(Intent.ACTION_SEND).apply {
@@ -59,18 +57,14 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun AppContent(vm: MainVM, act: MainActivity) {
-    // 默认直接进入主页，不再判断 isFirst
     var page by remember { mutableStateOf(Page.HOME) }
     
-    // 处理返回键逻辑
     BackHandler(page != Page.HOME) {
         if(page == Page.CONFIG_GEN || page == Page.CONFIG_BL) page = Page.CONFIG_ROOT else page = Page.HOME
     }
     
-    // 页面切换动画
     AnimatedContent(targetState = page, label = "Nav") { p ->
         when (p) {
-            // Page.GUIDE 已被移除
             Page.HOME -> HomeScreen(vm, { page = Page.CONFIG_ROOT }, { act.share(it) })
             Page.CONFIG_ROOT -> SettingsRoot(onBack = { page = Page.HOME }, onNav = { page = it }, vm = vm)
             Page.CONFIG_GEN -> GeneralSettings(vm, { page = Page.CONFIG_ROOT })
@@ -86,14 +80,12 @@ fun HomeScreen(vm: MainVM, toCfg: () -> Unit, onShare: (Uri) -> Unit) {
     val cfg by vm.cfg.collectAsStateWithLifecycle()
     val context = LocalContext.current
     
-    // 状态管理：记录选择的来源类型和 URI
     var sourceUri by remember { mutableStateOf<Uri?>(null) }
     var sourceUris by remember { mutableStateOf<List<Uri>?>(null) }
     var gitUrl by remember { mutableStateOf<String?>(null) }
     var projectName by remember { mutableStateOf("Project") }
     var mode by remember { mutableIntStateOf(0) } // 0=Dir, 1=Files, 2=Git
 
-    // 文件保存回调
     val saver = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { destUri ->
         destUri?.let { dest ->
             when (mode) {
@@ -104,22 +96,18 @@ fun HomeScreen(vm: MainVM, toCfg: () -> Unit, onShare: (Uri) -> Unit) {
         }
     }
 
-    // 启动文件保存器，生成默认文件名
     fun launchSaver() {
         val ext = if(cfg.format == com.sourcepack.data.Format.XML) "xml" else "md"
-        
         val prefix = if (mode == 2) {
              val clean = gitUrl?.trim()?.removeSuffix("/")?.removeSuffix(".git") ?: "GitHub"
              clean.substringAfterLast("/")
         } else {
              projectName
         }
-        
         val time = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
         saver.launch("${prefix}_$time.$ext")
     }
 
-    // 文件夹选择器
     val launcherDir = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         uri?.let { 
             sourceUri = it
@@ -130,7 +118,6 @@ fun HomeScreen(vm: MainVM, toCfg: () -> Unit, onShare: (Uri) -> Unit) {
         } 
     }
 
-    // 多文件选择器
     val launcherFiles = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { 
         if(it.isNotEmpty()) { 
             sourceUris = it
@@ -145,7 +132,6 @@ fun HomeScreen(vm: MainVM, toCfg: () -> Unit, onShare: (Uri) -> Unit) {
     Scaffold(topBar = { TopAppBar(title = {}, actions = { IconButton(onClick = toCfg) { Icon(Ico.Settings, null) } }) }) { pad ->
         Box(Modifier.padding(pad).fillMaxSize(), contentAlignment = Alignment.Center) {
             when (val s = state) {
-                // 空闲状态：显示三个主要功能入口
                 UiState.Idle -> Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
@@ -163,16 +149,27 @@ fun HomeScreen(vm: MainVM, toCfg: () -> Unit, onShare: (Uri) -> Unit) {
                 
                 is UiState.Loading -> LoadingView(msg = s.msg, detail = s.detail)
 
-                is UiState.Success -> ResultCard(true, s.info, { s.uri?.let { onShare(it) } }, { vm.reset() })
+                is UiState.Success -> ResultCard(
+                    success = true, 
+                    msg = s.info, 
+                    onShare = { s.uri?.let { onShare(it) } }, 
+                    onReset = { vm.reset() }
+                )
                 
-                is UiState.Error -> ResultCard(false, s.err, null, { vm.reset() })
+                // 修改：传入错误日志 URI，如果有的话，按钮会变成红色并分享日志
+                is UiState.Error -> ResultCard(
+                    success = false, 
+                    msg = s.err, 
+                    onShare = if (s.logUri != null) { { onShare(s.logUri) } } else null, 
+                    onReset = { vm.reset() },
+                    errorLogUri = s.logUri
+                )
                 
                 else -> {}
             }
         }
     }
     
-    // GitHub URL 输入弹窗
     if (showGitDialog) {
         var url by remember { mutableStateOf("") }
         AlertDialog(

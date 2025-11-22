@@ -80,13 +80,13 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 5471,
-          "line": 163
+          "index": 7032,
+          "line": 194
         },
         "start": {
           "column": 1,
-          "index": 5471,
-          "line": 163
+          "index": 7032,
+          "line": 194
         }
       }
     },
@@ -95,13 +95,13 @@
       "selection": {
         "end": {
           "column": 1,
-          "index": 7867,
-          "line": 199
+          "index": 7980,
+          "line": 196
         },
         "start": {
           "column": 1,
-          "index": 7867,
-          "line": 199
+          "index": 7980,
+          "line": 196
         }
       }
     },
@@ -134,7 +134,52 @@
           "line": 97
         }
       }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/core/SourcePacker.kt",
+      "selection": {
+        "end": {
+          "column": 1,
+          "index": 15423,
+          "line": 381
+        },
+        "start": {
+          "column": 1,
+          "index": 15423,
+          "line": 381
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/ui/UiComponents.kt",
+      "selection": {
+        "end": {
+          "column": 12,
+          "index": 610,
+          "line": 17
+        },
+        "start": {
+          "column": 12,
+          "index": 610,
+          "line": 17
+        }
+      }
+    },
+    {
+      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/build.gradle.kts",
+      "selection": {
+        "end": {
+          "column": 28,
+          "index": 379,
+          "line": 16
+        },
+        "start": {
+          "column": 28,
+          "index": 379,
+          "line": 16
+        }
+      }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/SourcePack/README.md"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/core/AppStrings.kt"
 }
