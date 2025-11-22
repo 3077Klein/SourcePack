@@ -1,4 +1,4 @@
-### English
+## English
 SourcePack is an Android utility designed to consolidate project source code into a single structured file (Markdown, XML, or Plain Text). It facilitates the export of codebases for analysis by Large Language Models (LLMs) or for documentation purposes.
 Key Features
  * Source Consolidation: Recursively scans local directories to generate a unified output file containing both the directory structure and file contents.
