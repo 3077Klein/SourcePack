@@ -1,7 +1,4 @@
-SourcePack
-English | 中文
-<a name="english"></a>
-English
+### English
 SourcePack is an Android utility designed to consolidate project source code into a single structured file (Markdown, XML, or Plain Text). It facilitates the export of codebases for analysis by Large Language Models (LLMs) or for documentation purposes.
 Key Features
  * Source Consolidation: Recursively scans local directories to generate a unified output file containing both the directory structure and file contents.
@@ -45,7 +42,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 
-<a name="chinese"></a>
 ## 中文
 
 SourcePack 是一款 Android 开发者工具，用于将源代码项目整合为单一的 Markdown、XML 或文本文件。该格式专为 ChatGPT、Claude 或 Gemini 等大语言模型优化，便于 AI 高效分析项目结构与逻辑。
