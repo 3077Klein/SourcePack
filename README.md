@@ -55,6 +55,5 @@ SourcePack 是一款 Android 实用工具，旨在将项目源代码整合到一
 ## 许可
 
 版权所有2025情愫(qing su)
-根据 Apache 许可证，2.0 版（“许可证”）许可
 
-除非符合许可证，否则您不得使用此文件。 您可以在 https://www.apache.org/licenses/LICENSE-2.0
+根据 Apache 许可证，2.0 版（“许可证”）许可，除非符合许可证，否则您不得使用此文件。 您可以在 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0) 获得许可证的副本，除非适用法律或书面约定的书面同意，在许可下分发的软件按“原样”分发，没有任何明示或暗示的保证或条件。 请参阅许可证下的特定语言管理权限和限制的许可证。
