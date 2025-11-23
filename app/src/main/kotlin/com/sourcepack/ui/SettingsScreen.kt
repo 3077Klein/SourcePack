@@ -10,6 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
@@ -19,16 +20,17 @@ import com.sourcepack.core.Str
 import com.sourcepack.data.*
 import com.sourcepack.viewmodel.MainVM
 import com.sourcepack.Page
-
+import com.sourcepack.BuildConfig 
 /**
  * 设置主页面
- * 包含常规配置、黑名单入口、外观设置和关于信息
+ * 包含常规配置、黑名单入口、外观设置、关于信息及开源声明
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsRoot(onBack: () -> Unit, onNav: (Page) -> Unit, vm: MainVM) {
     val currentTheme by vm.theme.collectAsState()
-    var showLicense by remember { mutableStateOf(false) }
+    var showLicense by remember { mutableStateOf(false) } // 项目本身的许可
+    var showLibs by remember { mutableStateOf(false) }    // 第三方库声明
     val ctx = LocalContext.current
 
     Scaffold(
@@ -41,11 +43,14 @@ fun SettingsRoot(onBack: () -> Unit, onNav: (Page) -> Unit, vm: MainVM) {
     ) { pad ->
         Column(Modifier.padding(pad).verticalScroll(rememberScrollState())) {
             
+            // --- 常规 ---
             SettingHeader(Str.get("常规", "General"))
             SettingLink(Ico.Settings, Str.get("通用配置", "General Config"), Str.get("格式、压缩、模式", "Compress, Format, Mode")) { onNav(Page.CONFIG_GEN) }
             SettingLink(Ico.Delete, Str.get("黑名单管理", "Blacklist"), Str.get("管理忽略规则 (批量)", "Manage Ignored Files")) { onNav(Page.CONFIG_BL) }
             
             HorizontalDivider(Modifier.padding(vertical = 8.dp).alpha(0.5f))
+            
+            // --- 外观 ---
             SettingHeader(Str.get("外观", "Appearance"))
             
             // 主题选择对话框逻辑
@@ -84,11 +89,13 @@ fun SettingsRoot(onBack: () -> Unit, onNav: (Page) -> Unit, vm: MainVM) {
             }
 
             HorizontalDivider(Modifier.padding(vertical = 8.dp).alpha(0.5f))
+            
+            // --- 关于 ---
             SettingHeader(Str.get("关于", "About"))
             
             ListItem(
                 headlineContent = { Text("SourcePack") },
-                supportingContent = { Text("${Str.APP_VERSION}\n${Str.get("构建变体", "Variant")}: Release") },
+                supportingContent = { Text("v${BuildConfig.VERSION_NAME}\n${Str.get("构建变体", "Variant")}: Release") },
                 leadingContent = { Icon(Ico.Info, null) }
             )
             
@@ -103,25 +110,61 @@ fun SettingsRoot(onBack: () -> Unit, onNav: (Page) -> Unit, vm: MainVM) {
                 supportingContent = { Text("${Str.AUTHOR_NAME} (AI: Gemini-3.0-Pro)\n${Str.AUTHOR_EMAIL}") },
                 leadingContent = { Icon(Ico.Folder, null) }
             )
-             ListItem(
+            
+            // 1. 项目许可 (SourcePack 自己的 License)
+            ListItem(
                 modifier = Modifier.clickable { showLicense = true },
-                headlineContent = { Text(Str.get("开源许可", "License")) },
+                headlineContent = { Text(Str.get("项目许可", "Project License")) },
                 supportingContent = { Text("Apache License 2.0") },
                 leadingContent = { Icon(Ico.Copyright, null) }
             )
+            
+            // 2. 第三方库声明 (对他人的致谢)
+            ListItem(
+                modifier = Modifier.clickable { showLibs = true },
+                headlineContent = { Text(Str.get("第三方开源库", "Open Source Libraries")) },
+                supportingContent = { Text(Str.get("致谢 Kotlin, AndroidX, OkHttp...", "Credits to Kotlin, AndroidX...")) },
+                leadingContent = { Icon(Ico.Description, null) }
+            )
+            
+            Spacer(Modifier.height(32.dp))
         }
     }
     
+    // 项目许可弹窗
     if (showLicense) {
         AlertDialog(
             onDismissRequest = { showLicense = false },
-            title = { Text("License") },
+            title = { Text("SourcePack License") },
             text = { 
                 Column(Modifier.verticalScroll(rememberScrollState())) {
                     Text(Str.LICENSE_TEXT, style = MaterialTheme.typography.bodySmall) 
                 }
             },
             confirmButton = { Button(onClick = { showLicense = false }) { Text("OK") } }
+        )
+    }
+    
+    // 第三方库弹窗
+    if (showLibs) {
+        AlertDialog(
+            onDismissRequest = { showLibs = false },
+            title = { Text(Str.get("第三方库", "Open Source Libraries")) },
+            text = {
+                Column(Modifier.verticalScroll(rememberScrollState())) {
+                    Text(Str.get("本项目使用了以下开源库 (点击跳转)：", "This project uses the following open source libraries (Tap to open):"), style = MaterialTheme.typography.labelLarge)
+                    Spacer(Modifier.height(16.dp))
+                    
+                    // 在这里填入了真实的 GitHub 或官方地址
+                    LibraryItem("Kotlin", "JetBrains", "Apache 2.0", "https://github.com/JetBrains/kotlin")
+                    LibraryItem("Jetpack Compose", "Google", "Apache 2.0", "https://androidx.tech")
+                    LibraryItem("Material Design 3", "Google", "Apache 2.0", "https://github.com/material-components/material-components-android")
+                    LibraryItem("AndroidX", "Google", "Apache 2.0", "https://github.com/androidx/androidx")
+                    LibraryItem("OkHttp", "Square, Inc.", "Apache 2.0", "https://github.com/square/okhttp")
+                    LibraryItem("DocumentFile", "Google", "Apache 2.0", "https://developer.android.com/reference/androidx/documentfile/provider/DocumentFile")
+                }
+            },
+            confirmButton = { TextButton(onClick = { showLibs = false }) { Text("OK") } }
         )
     }
 }
@@ -262,5 +305,39 @@ fun BlacklistSettings(vm: MainVM, back: () -> Unit) {
                 }) { Text(Str.get("确定", "OK")) } 
             }
         )
+    }
+}
+
+// --- 更新后的 LibraryItem 组件 ---
+@Composable
+fun LibraryItem(name: String, author: String, license: String, url: String) {
+    val ctx = LocalContext.current
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable {
+                // 点击时调用系统浏览器打开链接
+                try {
+                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                    ctx.startActivity(intent)
+                } catch (_: Exception) {
+                    // 防止没有浏览器导致的崩溃，虽然极少见
+                }
+            }
+            .padding(vertical = 8.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(name, style = MaterialTheme.typography.titleMedium)
+            // 可以在这里加个小图标提示是外链，不过保持简洁也可以
+        }
+        
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(author, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.width(8.dp))
+            Text("•", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.width(8.dp))
+            Text(license, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        HorizontalDivider(Modifier.padding(top = 8.dp).alpha(0.2f))
     }
 }

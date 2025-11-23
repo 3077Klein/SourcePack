@@ -1,167 +1,17 @@
 {
   "allFiles": [
     {
-      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/core/AppStrings.kt",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 1407,
-          "line": 40
-        },
-        "start": {
-          "column": 1,
-          "index": 1407,
-          "line": 40
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/data/AppConfig.kt",
-      "selection": {
-        "end": {
-          "column": 50,
-          "index": 637,
-          "line": 18
-        },
-        "start": {
-          "column": 50,
-          "index": 637,
-          "line": 18
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/data/PreferenceManager.kt",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 2779,
-          "line": 75
-        },
-        "start": {
-          "column": 1,
-          "index": 2779,
-          "line": 75
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/ui/theme/Theme.kt",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 2436,
-          "line": 57
-        },
-        "start": {
-          "column": 1,
-          "index": 2436,
-          "line": 57
-        }
-      }
-    },
-    {
       "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/ui/SettingsScreen.kt",
       "selection": {
         "end": {
-          "column": 1,
-          "index": 11816,
-          "line": 265
+          "column": 115,
+          "index": 4239,
+          "line": 97
         },
         "start": {
-          "column": 1,
-          "index": 11816,
-          "line": 265
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/viewmodel/MainVM.kt",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 7032,
-          "line": 194
-        },
-        "start": {
-          "column": 1,
-          "index": 7032,
-          "line": 194
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/MainActivity.kt",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 7980,
-          "line": 196
-        },
-        "start": {
-          "column": 1,
-          "index": 7980,
-          "line": 196
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/Page.kt",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 138,
-          "line": 7
-        },
-        "start": {
-          "column": 1,
-          "index": 138,
-          "line": 7
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/README.md",
-      "selection": {
-        "end": {
-          "column": 0,
-          "index": 13,
-          "line": 1
-        },
-        "start": {
-          "column": 0,
-          "index": 13,
-          "line": 1
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/core/SourcePacker.kt",
-      "selection": {
-        "end": {
-          "column": 1,
-          "index": 15423,
-          "line": 381
-        },
-        "start": {
-          "column": 1,
-          "index": 15423,
-          "line": 381
-        }
-      }
-    },
-    {
-      "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/ui/UiComponents.kt",
-      "selection": {
-        "end": {
-          "column": 12,
-          "index": 610,
-          "line": 17
-        },
-        "start": {
-          "column": 12,
-          "index": 610,
-          "line": 17
+          "column": 115,
+          "index": 4239,
+          "line": 97
         }
       }
     },
@@ -169,17 +19,17 @@
       "file": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/build.gradle.kts",
       "selection": {
         "end": {
-          "column": 28,
-          "index": 379,
+          "column": 19,
+          "index": 370,
           "line": 16
         },
         "start": {
-          "column": 28,
-          "index": 379,
+          "column": 8,
+          "index": 359,
           "line": 16
         }
       }
     }
   ],
-  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/SourcePack/README.md"
+  "selectedFile": "/storage/emulated/0/AndroidIDEProjects/SourcePack/app/src/main/kotlin/com/sourcepack/ui/SettingsScreen.kt"
 }
