@@ -1,4 +1,4 @@
-#SourcePack
+# SourcePack
 
 SourcePack 是一款 Android 实用工具，旨在将项目源代码整合到一个结构化的文件中（Markdown、XML 或纯文本格式）。它便于导出代码库，以便使用大型语言模型 (LLM) 进行分析或用于文档编写。
 
